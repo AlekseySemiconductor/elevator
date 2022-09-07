@@ -1,0 +1,11 @@
+.main-layout {
+  display: flex;
+
+  &__shaft-container {
+    display: flex;
+    gap: 20px;
+  }
+
+  &__floors {
+  }
+}
