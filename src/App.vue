@@ -1,18 +1,14 @@
 <template>
-  <img alt="Vue logo" src="./assets/logo.png" />
-  <HelloWorld msg="Welcome to Your Vue.js + TypeScript App" />
+  <MainLayout />
 </template>
-
 <script lang="ts">
-import { Options, Vue } from "vue-class-component";
-import HelloWorld from "./components/HelloWorld.vue";
+import MainLayout from "./layouts/MainLayout.vue";
 
-@Options({
+export default {
   components: {
-    HelloWorld,
+    MainLayout,
   },
-})
-export default class App extends Vue {}
+};
 </script>
 
 <style lang="scss">
