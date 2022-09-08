@@ -16,6 +16,17 @@
     height: 100px;
     background-color: #39e3bc;
   }
+
+  &__elevator-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+
+    &--hidden {
+      display: none;
+    }
+  }
 }
 
 @keyframes blink {

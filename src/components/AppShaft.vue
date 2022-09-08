@@ -14,7 +14,16 @@
         transform: `translateY(${position}px`,
       }"
     >
-      {{ currentFloorIndex }} этаж
+      <div
+        class="shaft__elevator-content"
+        :class="{
+          'shaft__elevator-content--hidden': state === EvelatorState.Free,
+        }"
+      >
+        <template v-if="currentFloorIndex < nextFloorIndex"> &uarr; </template>
+        <template v-else> &darr; </template>
+        {{ nextFloorIndex }} этаж
+      </div>
     </div>
   </div>
 </template>
@@ -39,7 +48,9 @@ export default {
       EvelatorState,
       state: EvelatorState.Free,
       currentFloorIndex: currentFloorIndex,
+      nextFloorIndex: 0,
       position: this.calcalatePosition(currentFloorIndex),
+      isUpDirection: false,
     };
   },
   created() {
@@ -59,7 +70,7 @@ export default {
       const nextPos = this.calcalatePosition(nextFloorIndex);
       const isUpDirection = nextFloorIndex > this.currentFloorIndex;
 
-      this.currentFloorIndex = nextFloorIndex;
+      this.nextFloorIndex = nextFloorIndex;
       this.state = EvelatorState.Moving;
 
       const interval = setInterval(() => {
@@ -76,6 +87,7 @@ export default {
       this.state = EvelatorState.Pending;
       setTimeout(() => {
         this.state = EvelatorState.Free;
+        this.currentFloorIndex = this.nextFloorIndex;
       }, pendingTime);
     },
   },
