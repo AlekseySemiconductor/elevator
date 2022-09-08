@@ -4,9 +4,25 @@
   width: 100px;
   border: 1px solid #000;
 
+  &--pending {
+    .shaft__elevator {
+      animation: blink 0.5s linear infinite;
+      animation-direction: alternate;
+    }
+  }
+
   &__elevator {
     width: 100%;
     height: 100px;
     background-color: #39e3bc;
+  }
+}
+
+@keyframes blink {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
   }
 }

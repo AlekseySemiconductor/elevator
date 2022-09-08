@@ -1,6 +1,9 @@
 <template>
   <div
     class="shaft"
+    :class="{
+      'shaft--pending': state === EvelatorState.Pending,
+    }"
     :style="{
       height: floorsCount * 100 + 'px',
     }"
@@ -18,7 +21,9 @@
 
 <script lang="ts">
 const speed = 1000 / 100; // 1 этаж(100px) за 1000ms
-const enum EvelatorState {
+const pendingTime = 3000;
+
+enum EvelatorState {
   Free,
   Moving,
   Pending,
@@ -29,8 +34,9 @@ export default {
     floorsCount: Number,
   },
   data() {
-    const currentFloorIndex = 3;
+    const currentFloorIndex = 3; // todo: прокинуть в props
     return {
+      EvelatorState,
       state: EvelatorState.Free,
       currentFloorIndex: currentFloorIndex,
       position: this.calcalatePosition(currentFloorIndex),
@@ -44,7 +50,9 @@ export default {
       return -(floorIndex - 1) * 100;
     },
     moveShaft(nextFloorIndex: number) {
-      if (nextFloorIndex === this.currentFloorIndex) {
+      const isTheSameFloor = nextFloorIndex === this.currentFloorIndex;
+      const isEvelatorBusy = this.state !== EvelatorState.Free;
+      if (isTheSameFloor || isEvelatorBusy) {
         return;
       }
 
@@ -66,6 +74,9 @@ export default {
     stopMoving(interval: number) {
       clearInterval(interval);
       this.state = EvelatorState.Pending;
+      setTimeout(() => {
+        this.state = EvelatorState.Free;
+      }, pendingTime);
     },
   },
 };
