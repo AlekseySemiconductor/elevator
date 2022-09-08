@@ -29,14 +29,10 @@
 </template>
 
 <script lang="ts">
+import { EvelatorState } from "@/models/evelator-state";
+
 const speed = 1000 / 100; // 1 этаж(100px) за 1000ms
 const pendingTime = 3000;
-
-enum EvelatorState {
-  Free,
-  Moving,
-  Pending,
-}
 
 export default {
   props: {
