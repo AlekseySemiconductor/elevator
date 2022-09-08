@@ -7,20 +7,19 @@
         :floorsCount="floorsCount"
       />
     </div>
-    <ul class="main-layout__floors">
-      <li
+    <div class="main-layout__floors">
+      <AppFloor
         v-for="floorIndex in floors"
         :key="floorIndex"
-        class="main-layout__floor"
-      >
-        {{ floorIndex }}
-      </li>
-    </ul>
+        :floorIndex="floorIndex"
+      />
+    </div>
   </div>
 </template>
 
 <script lang="ts">
 import AppShaft from "@/components/AppShaft.vue";
+import AppFloor from "@/components/AppFloor.vue";
 import range from "lodash/range";
 
 const floorsCount = 5; // количество этажей
@@ -31,11 +30,12 @@ export default {
     return {
       shafts: range(shaftsCount),
       floorsCount,
-      floors: range(floorsCount),
+      floors: range(floorsCount).map((x) => floorsCount - x),
     };
   },
   components: {
     AppShaft,
+    AppFloor,
   },
 };
 </script>
