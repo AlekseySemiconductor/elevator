@@ -28,18 +28,21 @@ const store = createStore({
         );
       }
     },
-    updateElevarPosition(state, { elevator }) {
-      elevator.position = elevator.isUpDirection
-        ? elevator.position - 1
-        : elevator.position + 1;
+    updateElevatorPosition(state, { elevator }) {
+      elevator.position =
+        elevator.nextFloorIndex > elevator.currentFloorIndex
+          ? elevator.position - 1
+          : elevator.position + 1;
     },
-    startPendingElevator(state, { nextFloorIndex, shaftIndex }) {
-      state.shafts[shaftIndex].state = ElevatorState.Pending;
-      state.floors.find((x: Floor) => x.index === nextFloorIndex)!.isActive =
-        false;
+    startPendingElevator(state, { elevator }) {
+      elevator.state = ElevatorState.Pending;
+      state.floors.find(
+        (x: Floor) => x.index === elevator.nextFloorIndex
+      )!.isActive = false;
     },
-    stopPendingElevator(state, shaftIndex: number) {
-      state.shafts[shaftIndex].state = ElevatorState.Free;
+    stopPendingElevator(state, { elevator }) {
+      elevator.state = ElevatorState.Free;
+      elevator.currentFloorIndex = elevator.nextFloorIndex;
     },
     addFloor(state) {
       state.floorsCount += 1;
@@ -51,11 +54,10 @@ const store = createStore({
   },
   actions: {
     callElevator(context, { nextFloorIndex }) {
-      const isFloorBusy = context.state.shafts.some(
-        (x) => x.currentFloorIndex === nextFloorIndex
+      const isTheSameFloor = context.state.shafts.some(
+        (x) => x.nextFloorIndex === nextFloorIndex
       );
-
-      if (isFloorBusy) {
+      if (isTheSameFloor) {
         return;
       }
 
@@ -76,39 +78,34 @@ const store = createStore({
 
       context.state.pendingFloors.push(nextFloorIndex);
     },
-    moveElevator(
-      { dispatch, commit },
-      { elevator, nextFloorIndex, afterRefresh = false }
-    ) {
-      if (!afterRefresh) {
-        elevator.isUpDirection = nextFloorIndex > elevator.currentFloorIndex;
-        elevator.currentFloorIndex = nextFloorIndex;
-        elevator.state = ElevatorState.Moving;
-      }
+    moveElevator({ dispatch, commit }, { elevator, nextFloorIndex }) {
+      elevator.nextFloorIndex = nextFloorIndex;
+      elevator.state = ElevatorState.Moving;
 
       const nextPos = calculatePosition(nextFloorIndex);
+
       const interval = setInterval(() => {
         if (nextPos === elevator.position) {
           clearInterval(interval);
+
           commit("startPendingElevator", {
-            nextFloorIndex,
-            shaftIndex: elevator.index,
+            elevator,
           });
 
           dispatch("stopElevator", {
-            shaftIndex: elevator.index,
+            elevator,
           });
           return;
         }
 
-        commit("updateElevarPosition", {
+        commit("updateElevatorPosition", {
           elevator,
         });
       }, speed);
     },
-    stopElevator({ commit, state, dispatch }, { shaftIndex }) {
+    stopElevator({ commit, state, dispatch }, { elevator }) {
       setTimeout(() => {
-        commit("stopPendingElevator", shaftIndex);
+        commit("stopPendingElevator", { elevator });
         const pendingFloorIndex = state.pendingFloors.shift();
         if (pendingFloorIndex) {
           dispatch("callElevator", {
@@ -132,7 +129,7 @@ function createShaft(index: number): Shaft {
     index,
     state: ElevatorState.Free,
     currentFloorIndex: initialFloorIndex,
-    isUpDirection: false,
+    nextFloorIndex: initialFloorIndex,
     position: calculatePosition(initialFloorIndex),
   };
 }

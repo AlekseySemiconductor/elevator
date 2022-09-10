@@ -20,9 +20,11 @@
           'shaft__elevator-content--hidden': shaft.state === ElevatorState.Free,
         }"
       >
-        <template v-if="isUpDirection"> &uarr; </template>
+        <template v-if="shaft.nextFloorIndex > shaft.currentFloorIndex">
+          &uarr;
+        </template>
         <template v-else> &darr; </template>
-        {{ shaft.currentFloorIndex }} этаж
+        {{ shaft.nextFloorIndex }} этаж
       </div>
     </div>
   </div>
@@ -35,7 +37,7 @@ export default {
   props: {
     shaftIndex: Number,
     currentFloorIndex: Number,
-    isUpDirection: Boolean,
+    nextFloorIndex: Number,
     position: Number,
   },
   data() {
@@ -48,13 +50,12 @@ export default {
       case ElevatorState.Moving:
         this.$store.dispatch("moveElevator", {
           elevator: this.shaft,
-          nextFloorIndex: this.shaft.currentFloorIndex,
-          afterRefresh: true, // todo: вернуть nextFloorIndex и currentFloorIndex, удалить afterRefresh
+          nextFloorIndex: this.shaft.nextFloorIndex,
         });
         break;
       case ElevatorState.Pending:
         this.$store.dispatch("stopElevator", {
-          shaftIndex: this.shaft.index,
+          elevator: this.shaft,
         });
         break;
       case ElevatorState.Free:

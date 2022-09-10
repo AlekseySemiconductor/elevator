@@ -21,7 +21,7 @@
           :key="shaft.index"
           :shaftIndex="shaft.index"
           :currentFloorIndex="shaft.currentFloorIndex"
-          :isUpDirection="shaft.isUpDirection"
+          :nextFloorIndex="shaft.nextFloorIndex"
           :position="shaft.position"
         />
       </div>

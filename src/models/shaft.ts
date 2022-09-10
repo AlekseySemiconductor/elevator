@@ -4,6 +4,6 @@ export interface Shaft {
   index: number;
   state: ElevatorState;
   currentFloorIndex: number;
-  isUpDirection: boolean;
+  nextFloorIndex: number;
   position: number;
 }
