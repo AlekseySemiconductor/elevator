@@ -6,7 +6,7 @@
         :key="shaft.index"
         :shaftIndex="shaft.index"
         :currentFloorIndex="shaft.currentFloorIndex"
-        :nextFloorIndex="shaft.nextFloorIndex"
+        :isUpDirection="shaft.isUpDirection"
       />
     </div>
     <div class="main-layout__floors">

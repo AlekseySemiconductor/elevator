@@ -20,11 +20,9 @@
           'shaft__elevator-content--hidden': shaft.state === ElevatorState.Free,
         }"
       >
-        <template v-if="shaft.currentFloorIndex < shaft.nextFloorIndex">
-          &uarr;
-        </template>
+        <template v-if="isUpDirection"> &uarr; </template>
         <template v-else> &darr; </template>
-        {{ shaft.nextFloorIndex }} этаж
+        {{ shaft.currentFloorIndex }} этаж
       </div>
     </div>
   </div>
@@ -39,7 +37,7 @@ export default {
   props: {
     shaftIndex: Number,
     currentFloorIndex: Number,
-    nextFloorIndex: Number,
+    isUpDirection: Boolean,
   },
   data() {
     return {
@@ -48,9 +46,8 @@ export default {
     };
   },
   methods: {
-    moveShaft(nextFloorIndex: number) {
+    moveElevator(nextFloorIndex: number) {
       const nextPos = this.calcalatePosition(nextFloorIndex);
-      const isUpDirection = nextFloorIndex > this.currentFloorIndex;
       const interval = setInterval(() => {
         if (nextPos === this.position) {
           clearInterval(interval);
@@ -61,7 +58,9 @@ export default {
           return;
         }
 
-        this.position = isUpDirection ? this.position - 1 : this.position + 1;
+        this.position = this.isUpDirection
+          ? this.position - 1
+          : this.position + 1;
       }, speed);
     },
     calcalatePosition(floorIndex: number): number {
@@ -77,8 +76,8 @@ export default {
     },
   },
   watch: {
-    nextFloorIndex(nextFloorIndex: number, oldVal: number) {
-      this.moveShaft(nextFloorIndex);
+    currentFloorIndex(nextFloorIndex: number, prevVal: number) {
+      this.moveElevator(nextFloorIndex);
     },
   },
 };

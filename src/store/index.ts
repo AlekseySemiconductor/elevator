@@ -14,7 +14,7 @@ export default createStore({
       index: i,
       state: ElevatorState.Free,
       currentFloorIndex,
-      nextFloorIndex: 0, // пусть следующий этаж по умолчанию будет 0, пока не вызовут лифт // todo: оставить только currentFloorIndex?
+      isUpDirection: false,
     })),
     floorsCount,
     floors: range(floorsCount).map((x) => ({
@@ -26,24 +26,27 @@ export default createStore({
   getters: {},
   mutations: {
     callElevator(state, nextFloorIndex: number) {
-      const hasFloorElevator = state.shafts.some(
-        (x) => x.nextFloorIndex === nextFloorIndex
+      const isFloorBusy = state.shafts.some(
+        (x) => x.currentFloorIndex === nextFloorIndex
       );
-      if (hasFloorElevator) {
+      if (isFloorBusy) {
         return;
       }
 
       state.floors.find((x) => x.index === nextFloorIndex)!.isActive = true;
+
       const freeElevator = state.shafts.find(
         (x) => x.state === ElevatorState.Free
       );
-
       if (freeElevator) {
-        freeElevator.nextFloorIndex = nextFloorIndex;
+        freeElevator.isUpDirection =
+          nextFloorIndex > freeElevator.currentFloorIndex;
+        freeElevator.currentFloorIndex = nextFloorIndex;
         freeElevator.state = ElevatorState.Moving;
-      } else {
-        state.pendingFloors.push(nextFloorIndex);
+        return;
       }
+
+      state.pendingFloors.push(nextFloorIndex);
     },
     startPendingElevator(state, { nextFloorIndex, shaftIndex }) {
       state.shafts[shaftIndex].state = ElevatorState.Pending;
@@ -52,8 +55,6 @@ export default createStore({
     },
     stopPendingElevator(state, shaftIndex: number) {
       state.shafts[shaftIndex].state = ElevatorState.Free;
-      state.shafts[shaftIndex].currentFloorIndex =
-        state.shafts[shaftIndex].nextFloorIndex;
     },
   },
   actions: {
