@@ -3,24 +3,18 @@ import { ElevatorState } from "@/models/elevator-state";
 import { Floor } from "@/models/floor";
 import range from "lodash/range";
 
-const floorsCount = 7; // количество этажей
-const shaftsCount = 4; // количество лифтовых шахт (лифтов)
-const currentFloorIndex = 1; // todo: вынести либо в environment, либо в input формы
+const initialFloorsCount = 7; // количество этажей
+const initialShaftsCount = 4; // количество лифтовых шахт (лифтов)
+const initialFloorIndex = 1; // todo: вынести либо в environment, либо в input формы
 const pendingTime = 3000;
 
 export default createStore({
   state: {
-    shafts: range(shaftsCount).map((x, i) => ({
-      index: i,
-      state: ElevatorState.Free,
-      currentFloorIndex,
-      isUpDirection: false,
-    })),
-    floorsCount,
-    floors: range(floorsCount).map((x) => ({
-      index: floorsCount - x,
-      isActive: false,
-    })),
+    shafts: range(initialShaftsCount).map((x, i) => createShaft(i)),
+    floorsCount: initialFloorsCount,
+    floors: range(initialFloorsCount).map((x) =>
+      createFloor(initialFloorsCount - x)
+    ),
     pendingFloors: [] as number[],
   },
   getters: {},
@@ -56,6 +50,13 @@ export default createStore({
     stopPendingElevator(state, shaftIndex: number) {
       state.shafts[shaftIndex].state = ElevatorState.Free;
     },
+    addFloor(state) {
+      state.floorsCount += 1;
+      state.floors.unshift(createFloor(state.floorsCount));
+    },
+    addShaft(state) {
+      state.shafts.push(createShaft(state.shafts.length));
+    },
   },
   actions: {
     stopMoving(context, { nextFloorIndex, shaftIndex }) {
@@ -75,3 +76,19 @@ export default createStore({
   },
   modules: {},
 });
+
+function createShaft(index: number) {
+  return {
+    index,
+    state: ElevatorState.Free,
+    currentFloorIndex: initialFloorIndex,
+    isUpDirection: false,
+  };
+}
+
+function createFloor(index: number) {
+  return {
+    index,
+    isActive: false,
+  };
+}

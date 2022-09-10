@@ -6,6 +6,10 @@
   height: 100px;
   border-bottom: 1px solid #ddd;
 
+  &:first-child {
+    border-top: 1px solid #ddd;
+  }
+
   &__index {
     position: absolute;
     left: 10px;

@@ -1,5 +1,87 @@
 .main-layout {
-  display: flex;
+  margin: 20px;
+  &__controls-wrapper {
+    display: flex;
+    margin-bottom: 20px;
+    gap: 20px;
+  }
+
+  &__btn {
+    position: relative;
+    display: inline-block;
+    width: auto;
+    height: auto;
+    background-color: transparent;
+    border: none;
+    padding: 0;
+    min-width: 150px;
+    cursor: pointer;
+
+    &:before {
+      content: "";
+      position: absolute;
+      background-color: #008200;
+      transition: 0.3s ease-out;
+    }
+
+    &.main-layout__btn-slide-down:before {
+      content: "";
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 100%;
+      width: 100%;
+    }
+
+    &.main-layout__btn-slide-down:hover:before {
+      content: "";
+      position: absolute;
+      height: 0%;
+    }
+
+    &.main-layout__btn-slide-up:before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 100%;
+      width: 100%;
+    }
+
+    &.main-layout__btn-slide-up:hover:before {
+      content: "";
+      position: absolute;
+      height: 0%;
+    }
+  }
+
+  &__btn-text {
+    position: relative;
+    top: 0;
+    left: 0;
+    display: inline-block;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    width: 100%;
+    padding: 15px 20px;
+    transition: 0.3s;
+    color: rgb(255, 255, 255);
+    border: 1px solid #008200;
+    transition: 0.2s 0.1s;
+
+    &:hover {
+      color: #008200;
+      transition: 0.2s 0.1s;
+    }
+  }
+
+  &__wrapper {
+    display: flex;
+  }
 
   &__shaft-container {
     display: flex;
