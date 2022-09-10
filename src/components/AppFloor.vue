@@ -1,7 +1,13 @@
 <template>
   <div class="floor">
     <span class="floor__index">{{ floorIndex }}</span>
-    <div class="floor__button"></div>
+    <div
+      class="floor__button"
+      :class="{
+        'floor__button--active': isActive,
+      }"
+      @click="callElevator"
+    ></div>
   </div>
 </template>
 
@@ -9,14 +15,16 @@
 export default {
   props: {
     floorIndex: Number,
+    isActive: Boolean,
   },
   data() {
     return {};
   },
-  created() {
-    console.log(23);
+  methods: {
+    callElevator() {
+      this.$store.commit("callElevator", this.floorIndex);
+    },
   },
-  methods: {},
 };
 </script>
 

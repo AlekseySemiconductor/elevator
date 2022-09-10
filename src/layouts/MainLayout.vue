@@ -2,16 +2,19 @@
   <div class="main-layout">
     <div class="main-layout__shaft-container">
       <AppShaft
-        v-for="shaftIndex in shafts"
-        :key="shaftIndex"
-        :floorsCount="floorsCount"
+        v-for="shaft in $store.state.shafts"
+        :key="shaft.index"
+        :shaftIndex="shaft.index"
+        :currentFloorIndex="shaft.currentFloorIndex"
+        :nextFloorIndex="shaft.nextFloorIndex"
       />
     </div>
     <div class="main-layout__floors">
       <AppFloor
-        v-for="floorIndex in floors"
-        :key="floorIndex"
-        :floorIndex="floorIndex"
+        v-for="floor in $store.state.floors"
+        :key="floor.index"
+        :floorIndex="floor.index"
+        :isActive="floor.isActive"
       />
     </div>
   </div>
@@ -20,18 +23,10 @@
 <script lang="ts">
 import AppShaft from "@/components/AppShaft.vue";
 import AppFloor from "@/components/AppFloor.vue";
-import range from "lodash/range";
-
-const floorsCount = 5; // количество этажей
-const shaftsCount = 4; // количество лифтовых шахт (лифтов)
 
 export default {
   data() {
-    return {
-      shafts: range(shaftsCount),
-      floorsCount,
-      floors: range(floorsCount).map((x) => floorsCount - x),
-    };
+    return {};
   },
   components: {
     AppShaft,

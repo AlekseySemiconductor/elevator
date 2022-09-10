@@ -2,7 +2,7 @@
   <div
     class="shaft"
     :class="{
-      'shaft--pending': state === EvelatorState.Pending,
+      'shaft--pending': shaft.state === ElevatorState.Pending,
     }"
     :style="{
       height: floorsCount * 100 + 'px',
@@ -17,74 +17,68 @@
       <div
         class="shaft__elevator-content"
         :class="{
-          'shaft__elevator-content--hidden': state === EvelatorState.Free,
+          'shaft__elevator-content--hidden': shaft.state === ElevatorState.Free,
         }"
       >
-        <template v-if="currentFloorIndex < nextFloorIndex"> &uarr; </template>
+        <template v-if="shaft.currentFloorIndex < shaft.nextFloorIndex">
+          &uarr;
+        </template>
         <template v-else> &darr; </template>
-        {{ nextFloorIndex }} этаж
+        {{ shaft.nextFloorIndex }} этаж
       </div>
     </div>
   </div>
 </template>
 
 <script lang="ts">
-import { EvelatorState } from "@/models/evelator-state";
+import { ElevatorState } from "@/models/elevator-state";
 
 const speed = 1000 / 100; // 1 этаж(100px) за 1000ms
-const pendingTime = 3000;
 
 export default {
   props: {
-    floorsCount: Number,
+    shaftIndex: Number,
+    currentFloorIndex: Number,
+    nextFloorIndex: Number,
   },
   data() {
-    const currentFloorIndex = 3; // todo: прокинуть в props
     return {
-      EvelatorState,
-      state: EvelatorState.Free,
-      currentFloorIndex: currentFloorIndex,
-      nextFloorIndex: 0,
-      position: this.calcalatePosition(currentFloorIndex),
-      isUpDirection: false,
+      ElevatorState,
+      position: this.calcalatePosition(this.currentFloorIndex),
     };
   },
-  created() {
-    this.moveShaft(5);
-  },
   methods: {
-    calcalatePosition(floorIndex: number): number {
-      return -(floorIndex - 1) * 100;
-    },
     moveShaft(nextFloorIndex: number) {
-      const isTheSameFloor = nextFloorIndex === this.currentFloorIndex;
-      const isEvelatorBusy = this.state !== EvelatorState.Free;
-      if (isTheSameFloor || isEvelatorBusy) {
-        return;
-      }
-
       const nextPos = this.calcalatePosition(nextFloorIndex);
       const isUpDirection = nextFloorIndex > this.currentFloorIndex;
-
-      this.nextFloorIndex = nextFloorIndex;
-      this.state = EvelatorState.Moving;
-
       const interval = setInterval(() => {
         if (nextPos === this.position) {
-          this.stopMoving(interval);
+          clearInterval(interval);
+          this.$store.dispatch("stopMoving", {
+            nextFloorIndex,
+            shaftIndex: this.shaftIndex,
+          });
           return;
         }
 
         this.position = isUpDirection ? this.position - 1 : this.position + 1;
       }, speed);
     },
-    stopMoving(interval: number) {
-      clearInterval(interval);
-      this.state = EvelatorState.Pending;
-      setTimeout(() => {
-        this.state = EvelatorState.Free;
-        this.currentFloorIndex = this.nextFloorIndex;
-      }, pendingTime);
+    calcalatePosition(floorIndex: number): number {
+      return -(floorIndex - 1) * 100;
+    },
+  },
+  computed: {
+    floorsCount() {
+      return this.$store.state.floorsCount;
+    },
+    shaft() {
+      return this.$store.state.shafts[this.shaftIndex];
+    },
+  },
+  watch: {
+    nextFloorIndex(nextFloorIndex: number, oldVal: number) {
+      this.moveShaft(nextFloorIndex);
     },
   },
 };
