@@ -1,6 +1,7 @@
 import { createStore } from "vuex";
 import { ElevatorState } from "@/models/elevator-state";
 import { Floor } from "@/models/floor";
+import { Shaft } from "@/models/shaft";
 import range from "lodash/range";
 
 const initialFloorsCount = 7; // количество этажей
@@ -29,14 +30,15 @@ export default createStore({
 
       state.floors.find((x) => x.index === nextFloorIndex)!.isActive = true;
 
-      const freeElevator = state.shafts.find(
-        (x) => x.state === ElevatorState.Free
+      const nearestFreeElevator = getNearestFreeElevatorIndex(
+        nextFloorIndex,
+        state.shafts
       );
-      if (freeElevator) {
-        freeElevator.isUpDirection =
-          nextFloorIndex > freeElevator.currentFloorIndex;
-        freeElevator.currentFloorIndex = nextFloorIndex;
-        freeElevator.state = ElevatorState.Moving;
+      if (nearestFreeElevator) {
+        nearestFreeElevator.isUpDirection =
+          nextFloorIndex > nearestFreeElevator.currentFloorIndex;
+        nearestFreeElevator.currentFloorIndex = nextFloorIndex;
+        nearestFreeElevator.state = ElevatorState.Moving;
         return;
       }
 
@@ -77,7 +79,7 @@ export default createStore({
   modules: {},
 });
 
-function createShaft(index: number) {
+function createShaft(index: number): Shaft {
   return {
     index,
     state: ElevatorState.Free,
@@ -91,4 +93,19 @@ function createFloor(index: number) {
     index,
     isActive: false,
   };
+}
+
+function getNearestFreeElevatorIndex(
+  nextFloorIndex: number,
+  shafts: Shaft[]
+): Shaft | null {
+  const freeShaft = shafts.filter((x) => x.state === ElevatorState.Free);
+  return freeShaft.length
+    ? freeShaft.reduce((prev, curr) =>
+        Math.abs(curr.currentFloorIndex - nextFloorIndex) <
+        Math.abs(prev.currentFloorIndex - nextFloorIndex)
+          ? curr
+          : prev
+      )
+    : null;
 }
