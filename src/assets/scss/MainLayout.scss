@@ -55,6 +55,46 @@
       position: absolute;
       height: 0%;
     }
+
+    &--border {
+      padding: 5px;
+
+      &:before,
+      &:after {
+        content: "";
+        position: absolute;
+        background: transparent;
+        z-index: 2;
+        width: 10%;
+        height: 25%;
+        transition: 0.35s;
+      }
+
+      &:before {
+        top: 0;
+        left: 0;
+        border-left: 1px solid rgb(28, 31, 30);
+        border-top: 1px solid rgb(28, 31, 30);
+      }
+
+      &:after {
+        bottom: 0;
+        right: 0;
+        border-right: 1px solid rgb(28, 31, 30);
+        border-bottom: 1px solid rgb(28, 31, 30);
+      }
+
+      &:hover:before,
+      &:hover:after {
+        width: 99.5%;
+        height: 98%;
+      }
+
+      .main-layout__btn-text {
+        color: rgb(255, 255, 255);
+        background-color: rgb(54, 56, 55);
+      }
+    }
   }
 
   &__btn-text {

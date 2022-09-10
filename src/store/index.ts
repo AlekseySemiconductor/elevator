@@ -11,14 +11,7 @@ const pendingTime = 3000; // время ожидания лифта перед �
 const speed = 1000 / 100; // 1 этаж(100px) за 1000ms
 
 const store = createStore({
-  state: {
-    shafts: range(initialShaftsCount).map((x, i) => createShaft(i)),
-    floorsCount: initialFloorsCount,
-    floors: range(initialFloorsCount).map((x) =>
-      createFloor(initialFloorsCount - x)
-    ),
-    pendingFloors: [] as number[],
-  },
+  state: getDefaultState(),
   getters: {},
   mutations: {
     initialiseStore(state) {
@@ -50,6 +43,10 @@ const store = createStore({
     },
     addShaft(state) {
       state.shafts.push(createShaft(state.shafts.length));
+    },
+    clearStore(state) {
+      Object.assign(state, getDefaultState());
+      localStorage.clear();
     },
   },
   actions: {
@@ -114,6 +111,9 @@ const store = createStore({
         }
       }, pendingTime);
     },
+    clearStore({ commit }) {
+      commit("clearStore");
+    },
   },
   modules: {},
 });
@@ -123,6 +123,17 @@ store.subscribe((mutation, state) => {
 });
 
 export default store;
+
+function getDefaultState() {
+  return {
+    shafts: range(initialShaftsCount).map((x, i) => createShaft(i)),
+    floorsCount: initialFloorsCount,
+    floors: range(initialFloorsCount).map((x) =>
+      createFloor(initialFloorsCount - x)
+    ),
+    pendingFloors: [] as number[],
+  };
+}
 
 function createShaft(index: number): Shaft {
   return {

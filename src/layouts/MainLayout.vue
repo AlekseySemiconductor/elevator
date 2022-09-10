@@ -13,6 +13,12 @@
       >
         <span class="main-layout__btn-text">Добавить новый этаж</span>
       </button>
+      <button
+        class="main-layout__btn main-layout__btn--border"
+        @click="clearStore"
+      >
+        <span class="main-layout__btn-text">Очистить store и localStorage</span>
+      </button>
     </div>
     <div class="main-layout__wrapper">
       <div class="main-layout__shaft-container">
@@ -55,6 +61,9 @@ export default {
     },
     addShaft() {
       this.$store.commit("addShaft");
+    },
+    clearStore() {
+      this.$store.dispatch("clearStore");
     },
   },
 };
