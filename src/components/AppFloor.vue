@@ -22,7 +22,7 @@ export default {
   },
   methods: {
     callElevator() {
-      this.$store.commit("callElevator", this.floorIndex);
+      this.$store.dispatch("callElevator", { nextFloorIndex: this.floorIndex });
     },
   },
 };

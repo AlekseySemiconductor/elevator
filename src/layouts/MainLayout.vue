@@ -22,6 +22,7 @@
           :shaftIndex="shaft.index"
           :currentFloorIndex="shaft.currentFloorIndex"
           :isUpDirection="shaft.isUpDirection"
+          :position="shaft.position"
         />
       </div>
       <div class="main-layout__floors">

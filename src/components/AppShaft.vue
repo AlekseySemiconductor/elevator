@@ -31,53 +31,45 @@
 <script lang="ts">
 import { ElevatorState } from "@/models/elevator-state";
 
-const speed = 1000 / 100; // 1 этаж(100px) за 1000ms
-
 export default {
   props: {
     shaftIndex: Number,
     currentFloorIndex: Number,
     isUpDirection: Boolean,
+    position: Number,
   },
   data() {
     return {
       ElevatorState,
-      position: this.calcalatePosition(this.currentFloorIndex),
     };
   },
-  methods: {
-    moveElevator(nextFloorIndex: number) {
-      const nextPos = this.calcalatePosition(nextFloorIndex);
-      const interval = setInterval(() => {
-        if (nextPos === this.position) {
-          clearInterval(interval);
-          this.$store.dispatch("stopMoving", {
-            nextFloorIndex,
-            shaftIndex: this.shaftIndex,
-          });
-          return;
-        }
-
-        this.position = this.isUpDirection
-          ? this.position - 1
-          : this.position + 1;
-      }, speed);
-    },
-    calcalatePosition(floorIndex: number): number {
-      return -(floorIndex - 1) * 100;
-    },
+  created() {
+    switch (this.shaft.state) {
+      case ElevatorState.Moving:
+        this.$store.dispatch("moveElevator", {
+          elevator: this.shaft,
+          nextFloorIndex: this.shaft.currentFloorIndex,
+          afterRefresh: true, // todo: вернуть nextFloorIndex и currentFloorIndex, удалить afterRefresh
+        });
+        break;
+      case ElevatorState.Pending:
+        this.$store.dispatch("stopElevator", {
+          shaftIndex: this.shaft.index,
+        });
+        break;
+      case ElevatorState.Free:
+        break;
+      default:
+        throw new Error(`state ${this.shaft.state} doesn't exist`);
+    }
   },
+  methods: {},
   computed: {
     floorsCount() {
       return this.$store.state.floorsCount;
     },
     shaft() {
       return this.$store.state.shafts[this.shaftIndex];
-    },
-  },
-  watch: {
-    currentFloorIndex(nextFloorIndex: number, prevVal: number) {
-      this.moveElevator(nextFloorIndex);
     },
   },
 };

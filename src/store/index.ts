@@ -6,8 +6,9 @@ import range from "lodash/range";
 
 const initialFloorsCount = 7; // количество этажей
 const initialShaftsCount = 4; // количество лифтовых шахт (лифтов)
-const initialFloorIndex = 1; // todo: вынести либо в environment, либо в input формы
-const pendingTime = 3000;
+const initialFloorIndex = 1; // начальная позиция всех лифтов - первый этаж
+const pendingTime = 3000; // время ожидания лифта перед тем, как он снова сможет двигаться на вызванный этаж
+const speed = 1000 / 100; // 1 этаж(100px) за 1000ms
 
 const store = createStore({
   state: {
@@ -27,29 +28,10 @@ const store = createStore({
         );
       }
     },
-    callElevator(state, nextFloorIndex: number) {
-      const isFloorBusy = state.shafts.some(
-        (x) => x.currentFloorIndex === nextFloorIndex
-      );
-      if (isFloorBusy) {
-        return;
-      }
-
-      state.floors.find((x) => x.index === nextFloorIndex)!.isActive = true;
-
-      const nearestFreeElevator = getNearestFreeElevatorIndex(
-        nextFloorIndex,
-        state.shafts
-      );
-      if (nearestFreeElevator) {
-        nearestFreeElevator.isUpDirection =
-          nextFloorIndex > nearestFreeElevator.currentFloorIndex;
-        nearestFreeElevator.currentFloorIndex = nextFloorIndex;
-        nearestFreeElevator.state = ElevatorState.Moving;
-        return;
-      }
-
-      state.pendingFloors.push(nextFloorIndex);
+    updateElevarPosition(state, { elevator }) {
+      elevator.position = elevator.isUpDirection
+        ? elevator.position - 1
+        : elevator.position + 1;
     },
     startPendingElevator(state, { nextFloorIndex, shaftIndex }) {
       state.shafts[shaftIndex].state = ElevatorState.Pending;
@@ -68,17 +50,70 @@ const store = createStore({
     },
   },
   actions: {
-    stopMoving(context, { nextFloorIndex, shaftIndex }) {
-      context.commit("startPendingElevator", {
-        shaftIndex,
-        nextFloorIndex,
-      });
+    callElevator(context, { nextFloorIndex }) {
+      const isFloorBusy = context.state.shafts.some(
+        (x) => x.currentFloorIndex === nextFloorIndex
+      );
 
+      if (isFloorBusy) {
+        return;
+      }
+
+      context.state.floors.find((x) => x.index === nextFloorIndex)!.isActive =
+        true;
+
+      const nearestFreeElevator = getNearestFreeElevator(
+        nextFloorIndex,
+        context.state.shafts
+      );
+      if (nearestFreeElevator) {
+        context.dispatch("moveElevator", {
+          elevator: nearestFreeElevator,
+          nextFloorIndex,
+        });
+        return;
+      }
+
+      context.state.pendingFloors.push(nextFloorIndex);
+    },
+    moveElevator(
+      { dispatch, commit },
+      { elevator, nextFloorIndex, afterRefresh = false }
+    ) {
+      if (!afterRefresh) {
+        elevator.isUpDirection = nextFloorIndex > elevator.currentFloorIndex;
+        elevator.currentFloorIndex = nextFloorIndex;
+        elevator.state = ElevatorState.Moving;
+      }
+
+      const nextPos = calculatePosition(nextFloorIndex);
+      const interval = setInterval(() => {
+        if (nextPos === elevator.position) {
+          clearInterval(interval);
+          commit("startPendingElevator", {
+            nextFloorIndex,
+            shaftIndex: elevator.index,
+          });
+
+          dispatch("stopElevator", {
+            shaftIndex: elevator.index,
+          });
+          return;
+        }
+
+        commit("updateElevarPosition", {
+          elevator,
+        });
+      }, speed);
+    },
+    stopElevator({ commit, state, dispatch }, { shaftIndex }) {
       setTimeout(() => {
-        context.commit("stopPendingElevator", shaftIndex);
-        const pendingShaft = context.state.pendingFloors.shift();
-        if (pendingShaft) {
-          context.commit("callElevator", pendingShaft);
+        commit("stopPendingElevator", shaftIndex);
+        const pendingFloorIndex = state.pendingFloors.shift();
+        if (pendingFloorIndex) {
+          dispatch("callElevator", {
+            nextFloorIndex: pendingFloorIndex,
+          });
         }
       }, pendingTime);
     },
@@ -98,6 +133,7 @@ function createShaft(index: number): Shaft {
     state: ElevatorState.Free,
     currentFloorIndex: initialFloorIndex,
     isUpDirection: false,
+    position: calculatePosition(initialFloorIndex),
   };
 }
 
@@ -108,7 +144,7 @@ function createFloor(index: number) {
   };
 }
 
-function getNearestFreeElevatorIndex(
+function getNearestFreeElevator(
   nextFloorIndex: number,
   shafts: Shaft[]
 ): Shaft | null {
@@ -121,4 +157,8 @@ function getNearestFreeElevatorIndex(
           : prev
       )
     : null;
+}
+
+function calculatePosition(floorIndex: number): number {
+  return -(floorIndex - 1) * 100;
 }
