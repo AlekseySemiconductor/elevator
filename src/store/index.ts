@@ -9,7 +9,7 @@ const initialShaftsCount = 4; // количество лифтовых шахт 
 const initialFloorIndex = 1; // todo: вынести либо в environment, либо в input формы
 const pendingTime = 3000;
 
-export default createStore({
+const store = createStore({
   state: {
     shafts: range(initialShaftsCount).map((x, i) => createShaft(i)),
     floorsCount: initialFloorsCount,
@@ -20,6 +20,13 @@ export default createStore({
   },
   getters: {},
   mutations: {
+    initialiseStore(state) {
+      if (localStorage.getItem("store")) {
+        this.replaceState(
+          Object.assign(state, JSON.parse(localStorage.getItem("store")!))
+        );
+      }
+    },
     callElevator(state, nextFloorIndex: number) {
       const isFloorBusy = state.shafts.some(
         (x) => x.currentFloorIndex === nextFloorIndex
@@ -78,6 +85,12 @@ export default createStore({
   },
   modules: {},
 });
+
+store.subscribe((mutation, state) => {
+  localStorage.setItem("store", JSON.stringify(state));
+});
+
+export default store;
 
 function createShaft(index: number): Shaft {
   return {
